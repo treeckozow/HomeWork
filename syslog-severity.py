@@ -10,16 +10,20 @@ def run_local_command(command):
         print(f"Command '{command}' returned non-zero exit status {e.returncode}")
         print(f"Error output: {e.stderr}")
 
-timestamp = run_local_command("date +%s")[0].strip()
-warn_num = run_local_command('grep -ic "warn" /var/log/syslog')[0].strip()
-error_num = run_local_command('grep -ic "error" /var/log/syslog')[0].strip()
-info_num = run_local_command('grep -ic "info" /var/log/syslog')[0].strip()
+severity = [0] * 4
+severity[0] = run_local_command("date +%s")[0].strip()
 
-data = {"timestamp": timestamp, "Info": info_num, "Warn": warn_num, "Error": error_num}
+with open("/var/log/syslog") as syslog_file:
+    syslog_list = syslog_file.readlines()
 
-print(timestamp)
-print(info_num)
-print(warn_num)
-print(error_num)
+for line in syslog_list:
+    if "info" in line.lower():
+        severity[1] += 1
+    if "warn" in line.lower():
+        severity[2] += 1
+    if "error" in line.lower():
+        severity[3] += 1
 
+for stat in severity:
+    print(stat)
 
