@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /web
+
+COPY end-project.py /web/
+COPY config.json /web/
+COPY essential.txt /web/
+COPY printColors.py /web/
+
+RUN pip install -r essential.txt
+
+ENV HOST_IP=127.0.0.1
+
+EXPOSE 80
+
+CMD ["python", "end-project.py"]
