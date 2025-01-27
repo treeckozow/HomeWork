@@ -108,11 +108,12 @@ def lambda_handler(event, context):
 
                 result = getCalculation(num1, num2, operator)
 
-                s3.put_object(
-                    Bucket=bucket,
-                    Key=str(time.time()),
-                    Body=result["result"]
-                )
+                if not "error" in result:
+                    s3.put_object(
+                        Bucket=bucket,
+                        Key=str(time.time()),
+                        Body=result["result"]
+                    )
 
                 if "result" in result:
                     return {
