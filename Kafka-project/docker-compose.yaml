@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: zookeeper:3.6
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: wurstmeister/kafka:2.12-2.5.0
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ac_sensor:
+    build:
+      context: ./sensor
+    environment:
+      SENSOR_TYPE: "ac"
+      TEMP_CSV_FILE: "ac_temp.csv"
+      POWER_CSV_FILE: "ac_power.csv"
+      HUMIDITY_CSV_FILE: "ac_humidity.csv"
+      KAFKA_PORT: "9092"
+    depends_on:
+      - kafka
+    restart: on-failure
+
+  washing_sensor:
+    build:
+      context: ./sensor
+    environment:
+      SENSOR_TYPE: "washing"
+      TEMP_CSV_FILE: "washing_temp.csv"
+      POWER_CSV_FILE: "washing_power.csv"
+      HUMIDITY_CSV_FILE: "washing_humidity.csv"
+      KAFKA_PORT: "9092"
+    depends_on:
+      - kafka
+    restart: on-failure
+
+  power_monitor_service:
+    build:
+      context: ./monitor_service
+    environment:
+      KAFKA_TOPICS: "ac_power,washing_power"
+      KAFKA_PORT: "9092"
+    ports:
+      - "5000:5000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  temp_monitor_service:
+    build:
+      context: ./monitor_service
+    environment:
+      KAFKA_TOPICS: "ac_temp,washing_temp"
+      KAFKA_PORT: "9092"
+    ports:
+      - "5001:5000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  humidity_monitor_service:
+    build:
+      context: ./monitor_service
+    environment:
+      KAFKA_TOPICS: "ac_humidity,washing_humidity"
+      KAFKA_PORT: "9092"
+    ports:
+      - "5002:5000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
