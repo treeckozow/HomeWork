@@ -6,7 +6,10 @@ from sensor_reading_controller import router
 from consumer import monitorSensor
 
 def main():
-    app = FastAPI(title="IoT Monitoring API")
+    app = FastAPI(
+        title="IoT Monitoring API",
+        description="Get all averages"
+        )
 
     app.state.SENSOR_DATA = {
         "current": {},
