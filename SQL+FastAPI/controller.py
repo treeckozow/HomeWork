@@ -14,7 +14,7 @@ async def get_StudentManager_obj(request: Request):
 async def getAllStudents(
     student_manager: StudentManager = Depends(get_StudentManager_obj)
     ) -> list[Student]:
-    return student_manager.getAllStudents()
+    return await student_manager.getAllStudents()
 
 @router.get(
     "/students/{student_id}",
@@ -25,7 +25,7 @@ async def getStudentById(
     student_id: int,
     student_manager: StudentManager = Depends(get_StudentManager_obj)
     ) -> dict:
-    return student_manager.getStudentById(student_id)
+    return await student_manager.getStudentById(student_id)
 
 @router.post(
     "/students",
@@ -36,7 +36,7 @@ async def addNewStudent(
     student: StudentInput,
     student_manager: StudentManager = Depends(get_StudentManager_obj)
     ) -> dict:
-    new_student = student_manager.addStudent(student)
+    new_student = await student_manager.addStudent(student)
     return {"Message": "Student created", "Student": new_student}
 
 @router.put(
@@ -50,7 +50,7 @@ async def updateStudent(
     student_manager: StudentManager = Depends(get_StudentManager_obj)
     ) -> dict:
     try:
-        updated_student = student_manager.updateStudent(student_id, student)
+        updated_student = await student_manager.updateStudent(student_id, student)
         return {"Message": "Student updated successfully", "Student": updated_student}
     except:
         return {"Message": "Error, invalid input"}
@@ -64,9 +64,9 @@ async def deleteStudent(
     student_id: int,
     student_manager: StudentManager = Depends(get_StudentManager_obj)
     ) -> dict:
-    deleted_student = student_manager.getStudentById(student_id)
+    deleted_student = await student_manager.getStudentById(student_id)
     try:
-        student_manager.deleteStudent(student_id)
+        await student_manager.deleteStudent(student_id)
         return {"Message": "Student deleted successfully", "Student": deleted_student["Student"]}
     except:
         return {"Message": "Error, student not found"}
