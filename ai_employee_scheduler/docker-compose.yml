@@ -1,0 +1,29 @@
+# docker-compose.yml
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: ai_scheduler_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler_db
+      - RESEND_API_KEY=re_GHoane99_PLKf3LZRhWoviw376qVMs49u #EDITED
+      - SENDER_EMAIL=treeckozow@gmail.com #EDITED
+      - TELEGRAM_BOT_TOKEN=7938912665:AAEJN1FEyWxGQP_Vt9aWb4Rdrt64Fa57Qk4 #EDITED
+      - API_URL=http://localhost:8000
+    depends_on:
+      - db
+  db:
+    image: postgres:13
+    container_name: scheduler_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=scheduler_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:
