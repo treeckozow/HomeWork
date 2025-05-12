@@ -1,11 +1,12 @@
 # app/bot.py
 import os
-import asyncio, nest_asyncio
+# import asyncio #, nest_asyncio
 import requests
 from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes 
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from app.schedule import ai_processing
 
-nest_asyncio.apply()
+# nest_asyncio.apply()
 
 # Set your API_URL if different (e.g., if hosted externally)
 API_URL = os.getenv("API_URL") # "http://localhost:8000"
@@ -21,16 +22,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     constraint_text = update.message.text
     # Map Telegram user ID to your system user ID if needed
     payload = {"user_id": user_id, "constraint_text": constraint_text}
-    try:
-        response = requests.post(f"{API_URL}/submit_constraint", json=payload)
-        if response.status_code == 200:
-            await update.message.reply_text("Your constraint has been submitted.")
-        else:
-            await update.message.reply_text("Error submitting constraint.")
-    except Exception as e:
-        await update.message.reply_text(f"Error connecting to scheduling service. {e}")
+    user = ai_processing.createNewUser(constraint_text)
+    await update.message.reply_text(user)
+    # try:
+    #     response = requests.post(f"{API_URL}/submit_constraint", json=payload)
+    #     if response.status_code == 200:
+    #         await update.message.reply_text("Your constraint has been submitted.")
+    #     else:
+    #         await update.message.reply_text(f"Error submitting constraint. {response}, {response.status_code}")
+    # except Exception as e:
+    #     await update.message.reply_text(f"Error connecting to scheduling service. {e}")
 
-async def start_bot():
+def start_bot():
     # Build the Telegram application using your bot token
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
@@ -40,8 +43,8 @@ async def start_bot():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Run the bot until manually stopped
-    await application.run_polling()
+    application.run_polling()
 
 # Run the async main function.
 if __name__ == '__main__':
-    asyncio.run(start_bot())
+    start_bot()
