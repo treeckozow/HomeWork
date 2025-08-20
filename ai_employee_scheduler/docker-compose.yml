@@ -1,0 +1,43 @@
+# docker-compose.yml
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: ai_scheduler_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler_db
+      - CHATGPT_API_KEY=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 #EDITED
+      - RESEND_API_KEY=re_GHoane99_PLKf3LZRhWoviw376qVMs49u #EDITED
+      - SENDER_EMAIL=treeckozow@gmail.com #EDITED
+      - TELEGRAM_BOT_TOKEN=7938912665:AAEJN1FEyWxGQP_Vt9aWb4Rdrt64Fa57Qk4 #EDITED
+      - API_URL=http://app:8000
+    depends_on:
+      - db
+
+  # bot:
+  #   build: .
+  #   container_name: telegram_chat_bot
+  #   depends_on:
+  #     - db
+  #     - app
+  #   working_dir: /app
+  #   entrypoint: ["python", "/chat_bot/telegram_chat_bot.py"]
+  #   environment:
+  #     - TELEGRAM_BOT_TOKEN=7938912665:AAEJN1FEyWxGQP_Vt9aWb4Rdrt64Fa57Qk4 #EDITED
+  #     - API_URL=http://app:8000
+    
+  db:
+    image: postgres:13
+    container_name: scheduler_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=scheduler_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:

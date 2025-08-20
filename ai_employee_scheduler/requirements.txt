@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+psycopg2-binary
+python-dotenv
+openai
+python-telegram-bot # ==13.7
+requests
